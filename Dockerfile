@@ -1,4 +1,4 @@
-FROM maven:3.9.6-openjdk-17-slim AS build
+FROM maven:3.9-openjdk-17-slim AS build
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY src src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
@@ -23,10 +23,9 @@ WORKDIR /app
 COPY --from=build /app/target/skripsi-0.0.1-SNAPSHOT.jar app.jar
 
 # Create non-root user for security
-RUN addgroup --system spring && adduser --system spring --ingroup spring
+RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
 # Run the application
 EXPOSE 8080
 CMD ["java", "-Dspring.profiles.active=railway", "-jar", "app.jar"]
-
