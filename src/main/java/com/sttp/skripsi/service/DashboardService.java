@@ -167,12 +167,20 @@ public class DashboardService {
             workloadList.add(new AbstractMap.SimpleEntry<>(project.getName(), workloadDetails));
         }
     
-        // Sort workloadList berdasarkan ID DESCENDING (5 project terbaru)
+        // Sort workloadList berdasarkan startProject DESCENDING (start date paling akhir)
+        // Jika endProject masih null, tetap tampilkan (project belum selesai)
         workloadList = workloadList.stream()
             .sorted((a, b) -> {
-                Long idA = (Long) a.getValue().get("id");
-                Long idB = (Long) b.getValue().get("id");
-                return idB.compareTo(idA); // DESCENDING - ID terbesar dulu
+                LocalDate startA = (LocalDate) a.getValue().get("startProject");
+                LocalDate startB = (LocalDate) b.getValue().get("startProject");
+                
+                // Handle null start dates - put them at the end
+                if (startA == null && startB == null) return 0;
+                if (startA == null) return 1;
+                if (startB == null) return -1;
+                
+                // Sort by start date descending (latest first)
+                return startB.compareTo(startA);
             })
             .limit(5)
             .collect(Collectors.toList());
