@@ -1,31 +1,22 @@
-FROM maven:3.9-openjdk-17-slim AS build
+FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-# Copy pom.xml first for better layer caching
-COPY pom.xml .
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
-# Download dependencies
+# Copy pom.xml and download dependencies
+COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copy source and build
 COPY src src
-
-# Build the application
 RUN mvn clean package -DskipTests
 
-# Runtime stage
-FROM eclipse-temurin:17-jre-alpine
-
-WORKDIR /app
-
-# Copy the built jar from build stage
-COPY --from=build /app/target/skripsi-0.0.1-SNAPSHOT.jar app.jar
-
-# Create non-root user for security
-RUN addgroup -S spring && adduser -S spring -G spring
+# Create non-root user
+RUN addgroup --system spring && adduser --system spring --ingroup spring
 USER spring:spring
 
 # Run the application
 EXPOSE 8080
-CMD ["java", "-Dspring.profiles.active=railway", "-jar", "app.jar"]
+CMD ["java", "-Dspring.profiles.active=railway", "-jar", "target/skripsi-0.0.1-SNAPSHOT.jar"]
