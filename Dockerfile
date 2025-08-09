@@ -30,6 +30,3 @@ USER spring:spring
 EXPOSE 8080
 CMD ["java", "-Dspring.profiles.active=railway", "-jar", "app.jar"]
 
-## Alternative Solution (More Robust)
-
-If you continue having issues, use Maven directly instead of the wrapper:
